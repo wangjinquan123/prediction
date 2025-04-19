@@ -24,11 +24,13 @@ class TrajPredictionEvaluator():
         # braids_gt = data['braids']
         braids = post_out['topo_pred'] # 现在概率值
         braids_gt = post_out['braids']
-        print("braids_gt",braids_gt.squeeze(-1))
+        # print("braids_gt",braids_gt.squeeze(-1))
 
-        topo_pred_ = braids.squeeze(-1)  # (2,14,14) 0407 不能少
-        braids_probs = F.softmax(topo_pred_, dim=-1)  # (2,14,14) 0407
-        print("braids_probs", braids_probs) # tensor([[[0.0239, 0.0239, 0.0238,  ..., 0.0238, 0.0238, 0.0238],
+        # topo_pred = braids.squeeze(-1)  # (2,14,14) 0407 不能少
+        # braids_probs = F.softmax(topo_pred_, dim=-1)  # (2,14,14) 0407
+
+        braids_probs = braids
+        # print("braids_probs", braids_probs) # tensor([[[0.0239, 0.0239, 0.0238,  ..., 0.0238, 0.0238, 0.0238],
 
         # 确保数据是CPU上的numpy数组
         # braids_probs_ = braids_probs.unsqueeze(-1)
@@ -43,7 +45,7 @@ class TrajPredictionEvaluator():
             # braids_pred = braids > thr
             braids_pred = braids_probs > thr # 0407
             # print("braids_pred", braids_pred)
-            braids_pred = braids_pred.unsqueeze(-1) # 0407 0418
+            # braids_pred = braids_pred.unsqueeze(-1) # 0407 0418
             # print("braids_pred", braids_pred)
             tp = torch.sum(braids_pred & braids_gt).float() #  预测正确 真实为Braids，模型也预测为Braids
             fp = torch.sum(braids_pred & ~braids_gt).float() #   错预测 真实不是Braids，模型错误预测为Braids
