@@ -37,9 +37,9 @@ class LossFunc(nn.Module):
     def pred_loss(self, out_sc: Dict[str, List[torch.Tensor]], gt_preds: List[torch.Tensor], pad_flags: List[torch.Tensor], gt_preds_sc: List[torch.Tensor], epoch):
         cls, reg, reg_final= map(lambda x: torch.cat(x, 0), out_sc[:3])  # dgf
         topo_pred, braids, actor_topo_mask = out_sc[3], out_sc[4], out_sc[5] # (1,14,14,1) (1,14,14,1,) (1,1,14)
-        topo_pred = topo_pred.squeeze(-1)
-        topo_pred = F.softmax(topo_pred, dim=-1)
-        topo_pred = topo_pred.unsqueeze(-1) # 0410 0418
+        # topo_pred = topo_pred.squeeze(-1)
+        # topo_pred = F.softmax(topo_pred, dim=-1)
+        # topo_pred = topo_pred.unsqueeze(-1) # 0410 0418
         gt_preds = torch.cat(gt_preds, 0)  # dgf
         has_preds = torch.cat(pad_flags, 0).bool()  # dgf
 

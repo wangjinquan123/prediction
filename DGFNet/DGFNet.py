@@ -279,19 +279,22 @@ class DGFNet(nn.Module):
             lanes_batch_sc[i, :num_lanes] = lanes_sc[lane_ids[0] : lane_ids[-1] + 1] # lanes_batch_sc:维度？
 
         topo_pred = self.apply_topo_reasoning(actors_batch_ac, actors_batch_ac, self.fuse_layer, self.decoder_layer) # (2,14,14,1) 以为直接输出的是概率  这个拓扑预测还需要斟酌
-        print("topo_pred:",topo_pred.squeeze(-1)) # tensor([[[[-0.1253],
+        # print("topo_pred:",topo_pred.squeeze(-1)) # tensor([[[[-0.1253],
 
-        topo_pred_mask = topo_pred.squeeze(-1) # (2,14,14) 0407 不能少
-        topo_pred_mask = F.softmax(topo_pred_mask, dim=-1) # (2,14,14) 0407 sigmod
+        topo_pred = F.sigmoid(topo_pred) # 0420
+        # print("topo_pred",topo_pred)
+
+        # topo_pred_mask = topo_pred.squeeze(-1) # (2,14,14) 0407 不能少
+        # topo_pred_mask = F.softmax(topo_pred_mask, dim=-1) # (2,14,14) 0407 sigmod
         # topo_pred_ = topo_pred_.unsqueeze(-1) # 0417 0418
         # print("topo_pred_mask:", topo_pred_mask) #  tensor([[[0.0239, 0.0239, 0.0238,  ..., 0.0238, 0.0238, 0.0238],
-        topo_pred_mask = topo_pred_mask > 0.5 # 0407 0417_2 概率的判断必须要先归一化 # 178 需根据F1.score来判断阈值  具体取多少阈值仍需商榷
-        # topo_pred_mask = topo_pred_mask.squeeze(-1) # 0417 0418
+        topo_pred_mask = topo_pred > 0.5 # 0407 0417_2 概率的判断必须要先归一化 # 178 需根据F1.score来判断阈值  具体取多少阈值仍需商榷
+        topo_pred_mask = topo_pred_mask.squeeze(-1) # 0417 0418 0420
         # print("topo_pred_mask:", topo_pred_mask) # (2,42,42) tensor([[[False, False, False,  ..., False, False, False],
 
         masks, _ = get_masks(agent_lengths, lane_lengths,  self.device) # list:4 01
         # print("mask",masks)
-        masks[-4] = topo_pred_mask.int()  # //0407 新加 (1,14,14,1) (2,42,42) .float()
+        masks[-4] = topo_pred_mask.float()  # //0407 新加 (1,14,14,1) (2,42,42) .float()
         # print("mask[-4]",masks)
         agent_states, lane_states = self.interaction_module_sc_am(actors_batch_sc, lanes_batch_sc, masks)  # four (1,15,128) (1,197,128) 02 lane_states无用
 
