@@ -42,6 +42,7 @@ class DGFNet(nn.Module):
         self.g_pred_len = 30
         self.g_num_coo = 2
         self.d_embed = 128
+        self.decoder_layer_topo = 2
 
         self.fuse_layer = TopoFuser(device=self.device,
                                     input_dim=cfg['d_embed'],
@@ -118,7 +119,7 @@ class DGFNet(nn.Module):
             center_gt_positive_idx / full_preds:
             Efficient decoding for train-time reasoning
         """
-
+        query_feat = query_feat.permute(1, 0, 2) # 0420  原版这儿需要permute
         b = query_feat.shape[0]
 
         src = query_feat
@@ -295,7 +296,7 @@ class DGFNet(nn.Module):
         masks, _ = get_masks(agent_lengths, lane_lengths,  self.device) # list:4 01
         # print("mask",masks)
         masks[-4] = topo_pred_mask.float()  # //0407 新加 (1,14,14,1) (2,42,42) .float()
-        # print("mask[-4]",masks)
+        print("mask[-4]",masks)
         agent_states, lane_states = self.interaction_module_sc_am(actors_batch_sc, lanes_batch_sc, masks)  # four (1,15,128) (1,197,128) 02 lane_states无用
 
         #reliable future trajectory generate
